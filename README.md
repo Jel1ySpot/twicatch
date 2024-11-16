@@ -9,7 +9,7 @@
 Install:
 ```shell
 go run github.com/playwright-community/playwright-go/cmd/playwright@latest install --with-deps
-go get -u github.com/Jel1ySpot/twicatch@main
+go get -u github.com/Jel1ySpot/twicatch
 ```
 
 Example:

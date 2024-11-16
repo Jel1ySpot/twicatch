@@ -2,6 +2,7 @@ package api
 
 import (
     json "github.com/Jel1ySpot/twicatch/pkg/json_helper"
+    "strconv"
     "strings"
     "time"
 )
@@ -82,7 +83,7 @@ type (
         Entities            TwitterEntities
         ConversationThreads [][]Tweet //TODO
         User                TwitterUser
-        ViewsCount          int
+        ViewsCount          int64
         BookmarkCount       int
         FavoriteCount       int
         QuoteCount          int
@@ -212,7 +213,7 @@ func (t Tweet) ParseResult(o *json.JsonObject) Tweet {
     t.PossiblySensitive = o.MustGetBool("legacy", "possibly_sensitive")
     t.Entities = TwitterEntities{}.Parse(o.MustGetObject("legacy", "entities"))
     t.User = TwitterUser{}.Parse(o.MustGetObject("core", "user_results", "result"))
-    t.ViewsCount = int(o.MustGetNum("views", "count"))
+    t.ViewsCount, _ = strconv.ParseInt(o.MustGetString("views", "count"), 0, 64)
     t.BookmarkCount = int(o.MustGetNum("legacy", "bookmark_count"))
     t.FavoriteCount = int(o.MustGetNum("legacy", "favorite_count"))
     t.QuoteCount = int(o.MustGetNum("legacy", "quote_count"))

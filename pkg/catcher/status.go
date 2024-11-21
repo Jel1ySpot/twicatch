@@ -6,7 +6,6 @@ import (
     json "github.com/Jel1ySpot/twicatch/pkg/json_helper"
     "github.com/playwright-community/playwright-go"
     "regexp"
-    "time"
 )
 
 const (
@@ -24,16 +23,13 @@ func (c *Context) Status(url string) (*api.Tweet, error) {
     tweetMatch := regexp.MustCompile(TweetPattern)
 
     var (
-        done    = make(chan any)
-        data    json.Object
-        timeout bool
+        data json.Object
     )
 
     page.OnResponse(func(rp playwright.Response) {
         go func() {
             if tweetMatch.MatchString(rp.URL()) || tweetDetailMatch.MatchString(rp.URL()) {
                 err = rp.JSON(&data)
-                close(done)
             }
         }()
     })
@@ -47,16 +43,12 @@ func (c *Context) Status(url string) (*api.Tweet, error) {
         return nil, err
     }
 
-    t := time.AfterFunc(30*time.Second, func() {
-        timeout = true
-        close(done)
+    _ = page.WaitForLoadState(playwright.PageWaitForLoadStateOptions{
+        State:   playwright.LoadStateNetworkidle,
+        Timeout: playwright.Float(30000),
     })
 
-    <-done
-    if !timeout {
-        t.Stop()
-    }
-    page.Close()
+    _ = page.Close()
     return tweetParser((*json.JsonObject)(&data).MustGetObject("data"))
 }
 

@@ -5,13 +5,22 @@ import (
     "github.com/playwright-community/playwright-go"
 )
 
+var twiCatcher *Context
+
 type Context struct {
     PlayWright *playwright.Playwright
     Browser    playwright.Browser
     Cookies    []playwright.OptionalCookie
 }
 
-func CreatePlayWright() (*Context, error) {
+func GetContext() (*Context, error) {
+    if twiCatcher == nil {
+        return createPlayWright()
+    }
+    return twiCatcher, nil
+}
+
+func createPlayWright() (*Context, error) {
     pw, err := playwright.Run()
     if err != nil {
         return nil, err
@@ -20,10 +29,11 @@ func CreatePlayWright() (*Context, error) {
     if err != nil {
         return nil, err
     }
-    return &Context{
+    twiCatcher = &Context{
         PlayWright: pw,
         Browser:    browser,
-    }, nil
+    }
+    return twiCatcher, nil
 }
 
 func (c *Context) AddCookie(cookie playwright.OptionalCookie) {

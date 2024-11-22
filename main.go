@@ -44,7 +44,7 @@ func init() {
 }
 
 func status(cookiePath string, url string) {
-    ctx, err := catcher.CreatePlayWright()
+    ctx, err := catcher.GetContext()
     if err != nil {
         panic(err)
     }
@@ -70,7 +70,7 @@ func status(cookiePath string, url string) {
 }
 
 func user(cookiePath string, url string) {
-    ctx, err := catcher.CreatePlayWright()
+    ctx, err := catcher.GetContext()
     if err != nil {
         panic(err)
     }

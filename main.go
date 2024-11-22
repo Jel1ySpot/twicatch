@@ -31,6 +31,8 @@ func main() {
     switch args[0] {
     case "status":
         status(cookiePath, args[1])
+    case "user":
+        user(cookiePath, args[1])
     default:
         fmt.Println(HelpText)
         return
@@ -64,5 +66,31 @@ func status(cookiePath string, url string) {
     //}
     //s, _ := object.Encode("  ")
     s, _ := json.MarshalIndent(data, "", "  ")
+    fmt.Printf("%s\n", s)
+}
+
+func user(cookiePath string, url string) {
+    ctx, err := catcher.CreatePlayWright()
+    if err != nil {
+        panic(err)
+    }
+    defer ctx.Close()
+
+    if cookiePath != "" {
+        if err := ctx.LoadCookieFile(cookiePath); err != nil {
+            panic(err)
+        }
+    }
+
+    tweets, err := ctx.UserTweets(url)
+    if err != nil {
+        panic(err)
+    }
+    //object, err := data.GetObject("data", "threaded_conversation_with_injections_v2", "instructions", 0, "entries", 0, "content", "itemContent", "tweet_results", "result")
+    //if err != nil {
+    //   panic(err)
+    //}
+    //s, _ := object.Encode("  ")
+    s, _ := json.MarshalIndent(tweets, "", "  ")
     fmt.Printf("%s\n", s)
 }

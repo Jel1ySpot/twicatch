@@ -4,7 +4,6 @@ import (
     "errors"
     "github.com/Jel1ySpot/twicatch/pkg/api"
     json "github.com/Jel1ySpot/twicatch/pkg/json_helper"
-    "github.com/playwright-community/playwright-go"
     "regexp"
 )
 
@@ -19,36 +18,29 @@ func (c *Context) Status(url string) (*api.Tweet, error) {
         return nil, err
     }
 
-    tweetDetailMatch := regexp.MustCompile(TweetDetailPattern)
-    tweetMatch := regexp.MustCompile(TweetPattern)
-
     var (
-        data json.Object
+        tweetMatch = regexp.MustCompile(TweetDetailPattern + "|" + TweetPattern)
+        data       json.Object
     )
 
-    page.OnResponse(func(rp playwright.Response) {
-        go func() {
-            if tweetMatch.MatchString(rp.URL()) || tweetDetailMatch.MatchString(rp.URL()) {
-                err = rp.JSON(&data)
-            }
-        }()
-    })
-
-    ctx := page.Context()
-    if err = ctx.AddCookies(c.Cookies); err != nil {
+    if page.Context().AddCookies(c.Cookies) != nil {
         return nil, err
     }
 
-    if _, err = page.Goto(url); err != nil {
+    resp, err := page.ExpectResponse(tweetMatch, func() error {
+        _, err := page.Goto(url)
+        return err
+    })
+    if err != nil {
         return nil, err
     }
 
-    _ = page.WaitForLoadState(playwright.PageWaitForLoadStateOptions{
-        State:   playwright.LoadStateNetworkidle,
-        Timeout: playwright.Float(30000),
-    })
+    if resp.JSON(&data) != nil {
+        return nil, err
+    }
 
     _ = page.Close()
+
     return tweetParser((*json.JsonObject)(&data).MustGetObject("data"))
 }
 

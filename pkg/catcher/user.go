@@ -38,7 +38,9 @@ func (c *Context) UserTweets(url string) (*api.UserTweets, error) {
 
     _ = page.Close()
 
-    return userTweetsParser((*json.JsonObject)(&data).MustGetObject("data"))
+    t := api.UserTweets{}.Parse((*json.JsonObject)(&data).MustGetObject("data"))
+
+    return &t, nil
 }
 
 func userByScreenNameParser(data *json.JsonObject) (*api.TwitterUser, error) {
@@ -51,19 +53,4 @@ func userByScreenNameParser(data *json.JsonObject) (*api.TwitterUser, error) {
     }
     user := api.TwitterUser{}.Parse(result)
     return &user, nil
-}
-
-func userTweetsParser(data *json.JsonObject) (*api.UserTweets, error) {
-    instructions := data.MustGetArray(json.ParsePath("user/result/timeline_v2/timeline/instructions")...)
-    var entries *json.JsonArray = nil
-    for i := 0; i < instructions.Length(); i++ {
-        if instructions.MustGetString(i, "type") == "TimelineAddEntries" {
-            entries = instructions.MustGetArray(i, "entries")
-        }
-    }
-    if entries == nil {
-        return nil, errors.New("parse UserTweets failed")
-    }
-    userTweets := api.UserTweets{}.ParseEntries(entries)
-    return &userTweets, nil
 }

@@ -64,6 +64,7 @@ type (
         Bookmarked          bool
         Favorited           bool
         Retweeted           bool
+        RetweetStatus       *Tweet
     }
 )
 
@@ -150,6 +151,10 @@ func (t Tweet) ParseResult(o *json.JsonObject) Tweet {
     t.Bookmarked = o.MustGetBool("legacy", "bookmarked")
     t.Favorited = o.MustGetBool("legacy", "favorited")
     t.Retweeted = o.MustGetBool("legacy", "retweeted")
+    if rt, err := o.GetObject("retweeted_status_result", "result"); err == nil {
+        retweetStatus := Tweet{}.ParseResult(rt)
+        t.RetweetStatus = &retweetStatus
+    }
     return t
 }
 
